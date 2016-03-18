@@ -11,6 +11,7 @@
  */
 package com.rmn.qa;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,7 +23,6 @@ import org.openqa.grid.internal.ProxySet;
 import org.openqa.grid.internal.RemoteProxy;
 import org.openqa.grid.internal.TestSession;
 import org.openqa.grid.internal.TestSlot;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +41,7 @@ public final class AutomationRunContext {
     private static final int CLEANUP_LIFE_LENGTH_IN_SECONDS = 90; // 1.5 minutes
     private Map<String, AutomationRunRequest> requests = Maps.newConcurrentMap();
     private Map<String, AutomationDynamicNode> nodes = Maps.newConcurrentMap();
+    private Set<String> pendingStartupNodes = Collections.newSetFromMap(Maps.newConcurrentMap()); // Nodes that are currently starting up and have not registered yet
 
     private int totalNodeCount;
 
@@ -285,7 +286,7 @@ public final class AutomationRunContext {
         } else {
             return System.currentTimeMillis()
                     > runRequest.getCreatedDate().getTime() + (AutomationRunContext.CLEANUP_LIFE_LENGTH_IN_SECONDS
-                        * 1000);
+                    * 1000);
         }
     }
 
@@ -305,6 +306,30 @@ public final class AutomationRunContext {
      */
     public void setTotalNodeCount(final int totalNodeCount) {
         this.totalNodeCount = totalNodeCount;
+    }
+
+    public void addPendingNode(String amiId) {
+        pendingStartupNodes.add(amiId);
+    }
+
+    public void removePendingNode(String amiId) {
+        pendingStartupNodes.remove(amiId);
+    }
+
+    public boolean pendingNodeExists(String amiId) {
+        return pendingStartupNodes.contains(amiId);
+    }
+
+    public Set<String> getPendingStartupNodes() {
+        return pendingStartupNodes;
+    }
+
+    /**
+     * Returns true if there are no nodes that are pending startup
+     * @return
+     */
+    public boolean noPendingNodesExist() {
+        return pendingStartupNodes.isEmpty();
     }
 
     /**
