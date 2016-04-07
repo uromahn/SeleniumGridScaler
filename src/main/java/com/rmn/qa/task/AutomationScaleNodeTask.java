@@ -102,8 +102,8 @@ public class AutomationScaleNodeTask extends AbstractAutomationCleanupTask {
                         continue;
                     }
                     Object platform = capabilities.getCapability(CapabilityType.PLATFORM);
-                    // Ignore requests specifying a specific platform for now
-                    if (platform == null || "ANY".equals(platform.toString()) || "*".equals(platform.toString())) {
+                    // Ignore requests specifying a specific platform for now unless its linux
+                    if (platform == null || "linux".equalsIgnoreCase(platform.toString()) || "ANY".equals(platform.toString()) || "*".equals(platform.toString())) {
                         log.warn("Computing load for new nodes for browser: " + browser);
                         queuedBrowsers.computeIfAbsent(browser, s -> new Date());
                     }
